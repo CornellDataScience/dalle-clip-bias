@@ -1,0 +1,9 @@
+CLIP+VQGAN/CLIP/**
+CLIP+VQGAN/tamingtransformers/**
+CLIP+VQGAN/checkpoints/**
+CLIP+VQGAN/output.png
+
+CLIP+Optim/CLIP/**
+CLIP+Optim/output.png
+
+.python-version
