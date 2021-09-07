@@ -27,7 +27,8 @@ from torch_optimizer import DiffGrad, AdamP, RAdam
 from torchvision import transforms
 from torchvision.transforms import functional as TF
 
-from CLIP import clip
+#from CLIP import clip
+import clip
 from utils import *
 
 
