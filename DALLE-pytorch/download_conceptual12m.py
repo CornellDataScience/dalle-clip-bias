@@ -32,4 +32,8 @@ def download_conceptual(data_file):
 
 
 if __name__ == '__main__':
-    download_conceptual('cc12m_small.tsv')
+    """
+        In order for this code to work, please make sure to download the 
+        .tsv file from the following link: https://storage.googleapis.com/conceptual_12m/cc12m.tsv
+    """
+    download_conceptual('cc12m.tsv')

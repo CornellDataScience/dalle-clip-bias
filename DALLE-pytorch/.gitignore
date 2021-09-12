@@ -1,1 +1,5 @@
 .history
+__pycache__
+taming
+image-and-text-data
+*.tsv
