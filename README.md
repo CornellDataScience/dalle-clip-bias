@@ -43,12 +43,10 @@ imports changed. The following files need modifications:
 
 * `tamingtransformers/taming/models/cond_transformer.py`
 * `tamingtransformers/taming/models/vqgan.py`
-* `tamingtransformers/taming/models/modules/discriminator/model.py`
-* `tamingtransformers/taming/models/modules/discriminator/model.py`
-* `tamingtransformers/taming/models/modules/losses/__init__.py`
-* `tamingtransformers/taming/models/modules/discriminator/model.py`
-* `tamingtransformers/taming/models/modules/losses/lpips.py`
-* `tamingtransformers/taming/models/modules/losses/vqperceptual.py`
+* `tamingtransformers/taming/modules/discriminator/model.py`
+* `tamingtransformers/taming/modules/losses/__init__.py`
+* `tamingtransformers/taming/modules/losses/lpips.py`
+* `tamingtransformers/taming/modules/losses/vqperceptual.py`
 
 For each of these files, for any imports from `taming` or `main` they should be
 changed to `tamingtransformers.taming` or `tamingtransformers.main`.
