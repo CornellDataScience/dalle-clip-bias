@@ -53,5 +53,17 @@ imports changed. The following files need modifications:
 For each of these files, for any imports from `taming` or `main` they should be
 changed to `tamingtransformers.taming` or `tamingtransformers.main`.
 
+Lastly we will need to download some checkpoint files. E.g.
+
+```bash
+mkdir checkpoints
+
+curl -L -o checkpoints/vqgan_imagenet_f16_16384.yaml -C - 'https://heibox.uni-heidelberg.de/d/a7530b09fed84f80a887/files/?p=%2Fconfigs%2Fmodel.yaml&dl=1' #ImageNet 16384
+curl -L -o checkpoints/vqgan_imagenet_f16_16384.ckpt -C - 'https://heibox.uni-heidelberg.de/d/a7530b09fed84f80a887/files/?p=%2Fckpts%2Flast.ckpt&dl=1' #ImageNet 16384
+```
+
+Then we must modify `checkpoints/vqgan_imagenet_f16_16384.yaml` to modify any
+`taming` names into `tamingtransformers.taming`.
+
 3. DALLE:
 4. DALLE-mini:
