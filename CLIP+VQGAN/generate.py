@@ -291,8 +291,7 @@ def checkin(i, losses, model, z, args):
     TF.to_pil_image(out[0].cpu()).save(args.output, pnginfo=info) 	
 
 
-def ascend_txt(z, model, perceptor, normalize, make_cutouts, args, pMs):
-    global i
+def ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs):gi
     out = synth(z, model)
     iii = perceptor.encode_image(normalize(make_cutouts(out))).float()
     
@@ -315,7 +314,7 @@ def ascend_txt(z, model, perceptor, normalize, make_cutouts, args, pMs):
 
 def train(i, opt, z, model, perceptor, normalize, make_cutouts, args, pMs, z_min, z_max):
     opt.zero_grad(set_to_none=True)
-    lossAll = ascend_txt(z, model, perceptor, normalize, make_cutouts, args, pMs)
+    lossAll = ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs)
     
     if i % args.display_freq == 0:
         checkin(i, lossAll, model, z, args)
