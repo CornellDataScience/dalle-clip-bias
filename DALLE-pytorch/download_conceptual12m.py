@@ -18,16 +18,17 @@ def download_conceptual(data_file):
     if not os.path.isdir(dir):
         os.mkdir(dir)
 
+    x = 0
     for i in range(len(df['url'])):
         try:
-            target_file = os.path.join(dir, f'image_{i}')
+            target_file = os.path.join(dir, f'conceptualcc12m_{x}')
+            x += 1
             urllib.request.urlretrieve(
                 df['url'].iloc[i], f'{target_file}.jpg')
             f = open(f'{target_file}.txt', 'w+')
             f.write(df['caption'].iloc[i])
             f.close()
-        except:
-            e = sys.exc_info()[0]
+        except Exception as e:
             print(f'An Exception has occured: {e}')
 
 
