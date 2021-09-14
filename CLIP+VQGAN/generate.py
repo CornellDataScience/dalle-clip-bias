@@ -291,7 +291,7 @@ def checkin(i, losses, model, z, args):
     TF.to_pil_image(out[0].cpu()).save(args.output, pnginfo=info) 	
 
 
-def ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs):gi
+def ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs):
     out = synth(z, model)
     iii = perceptor.encode_image(normalize(make_cutouts(out))).float()
     
