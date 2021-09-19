@@ -282,16 +282,16 @@ def synth(z, model):
 
 
 @torch.no_grad()
-def checkin(i, losses, model, z, args):
+def checkin(i, losses, model, z, args, prompt_file_path):
     losses_str = ', '.join(f'{loss.item():g}' for loss in losses)
     tqdm.write(f'i: {i}, loss: {sum(losses).item():g}, losses: {losses_str}')
     out = synth(z, model)
     info = PngImagePlugin.PngInfo()
     info.add_text('comment', f'{args.prompts}')
-    TF.to_pil_image(out[0].cpu()).save(args.output, pnginfo=info) 	
+    TF.to_pil_image(out[0].cpu()).save(f"{prompt_file_path}/{args.output}", pnginfo=info) 	
 
 
-def ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs):
+def ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs, prompt_file_path):
     out = synth(z, model)
     iii = perceptor.encode_image(normalize(make_cutouts(out))).float()
     
@@ -307,17 +307,17 @@ def ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs):
     if args.make_video:    
         img = np.array(out.mul(255).clamp(0, 255)[0].cpu().detach().numpy().astype(np.uint8))[:,:,:]
         img = np.transpose(img, (1, 2, 0))
-        imageio.imwrite('./steps/' + str(i) + '.png', np.array(img))
+        imageio.imwrite(f'{prompt_file_path}/steps/' + str(i) + '.png', np.array(img))
 
     return result # return loss
 
 
-def train(i, opt, z, model, perceptor, normalize, make_cutouts, args, pMs, z_min, z_max):
+def train(i, opt, z, model, perceptor, normalize, make_cutouts, args, pMs, z_min, z_max, prompt_file_path):
     opt.zero_grad(set_to_none=True)
-    lossAll = ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs)
+    lossAll = ascend_txt(i, z, model, perceptor, normalize, make_cutouts, args, pMs, prompt_file_path)
     
     if i % args.display_freq == 0:
-        checkin(i, lossAll, model, z, args)
+        checkin(i, lossAll, model, z, args, prompt_file_path)
        
     loss = sum(lossAll)
     loss.backward()
@@ -360,11 +360,15 @@ def main():
     if args.make_video and args.make_zoom_video:
         print("Warning: Make video and make zoom video are mutually exclusive.")
         args.make_video = False
-        
+    
+    prompt_file_path = "-".join([x.replace(" ", "_") for x in args.prompts])
+    if not os.path.exists(f'{prompt_file_path}'):
+        os.mkdir(f'{prompt_file_path}')
+    
     # Make video steps directory
     if args.make_video or args.make_zoom_video:
-        if not os.path.exists('steps'):
-            os.mkdir('steps')
+        if not os.path.exists(f'{prompt_file_path}/steps'):
+            os.mkdir(f'{prompt_file_path}/steps')
 
     # Fallback to CPU if CUDA is not found and make sure GPU video rendering is also disabled
     # NB. May not work for AMD cards?
@@ -518,7 +522,7 @@ def main():
                         # Save image
                         img = np.array(out.mul(255).clamp(0, 255)[0].cpu().detach().numpy().astype(np.uint8))[:,:,:]
                         img = np.transpose(img, (1, 2, 0))
-                        imageio.imwrite('./steps/' + str(j) + '.png', np.array(img))
+                        imageio.imwrite(f'{prompt_file_path}/steps/' + str(j) + '.png', np.array(img))
 
                         # Time to start zooming?                    
                         if args.zoom_start <= i:
@@ -563,7 +567,7 @@ def main():
                         p += 1    
 
                 # Training time
-                train(i, opt, z, model, perceptor, normalize, make_cutouts, args, pMs, z_min, z_max)
+                train(i, opt, z, model, perceptor, normalize, make_cutouts, args, pMs, z_min, z_max, prompt_file_path)
                 
                 # Ready to stop yet?
                 if i == args.max_iterations:
@@ -593,7 +597,7 @@ def main():
         frames = []
         tqdm.write('Generating video...')
         for i in range(init_frame,last_frame):
-            temp = Image.open("./steps/"+ str(i) +'.png')
+            temp = Image.open(f"{prompt_file_path}/steps/"+ str(i) +'.png')
             keep = temp.copy()
             frames.append(keep)
             temp.close()
