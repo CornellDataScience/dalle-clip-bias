@@ -32,6 +32,7 @@ rotary-embedding-torch = "^0.1.0"
 g-mlp-pytorch = "^0.1.5"
 youtokentome = "^1.0.6"
 webdataset = "^0.1.76"
+horovod = "^0.22.1"
 
 [tool.poetry.dev-dependencies]
 jupyter = "^1.0.0"

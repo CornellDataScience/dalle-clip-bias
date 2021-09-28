@@ -40,7 +40,7 @@ class TextImageDataset(Dataset):
         self.text_files = {k: v for k, v in text_files.items() if k in keys}
         self.image_files = {k: v for k, v in image_files.items() if k in keys}
         self.text_len = text_len
-        self.truncate_captions = truncate_captions
+        self.truncate_captions = True
         self.resize_ratio = resize_ratio
         self.tokenizer = tokenizer
         self.image_transform = T.Compose([

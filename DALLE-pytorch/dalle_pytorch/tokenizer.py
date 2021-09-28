@@ -260,6 +260,7 @@ class YttmTokenizer:
                 if truncate_text:
                     tokens = tokens[:context_length]
                 else:
+                    print("HERE", i)
                     raise RuntimeError(f"Input {texts[i]} is too long for context length {context_length}")
             result[i, :len(tokens)] = torch.tensor(tokens)
 

@@ -4,6 +4,8 @@ import requests
 import sys
 import shutil
 
+from tqdm import tqdm
+
 
 def download_conceptual(data_file):
     """
@@ -19,15 +21,16 @@ def download_conceptual(data_file):
     if not os.path.isdir(dir):
         os.mkdir(dir)
 
-    x = 375
+    x = 0
     print('Downloading images...')
-    for i in range(len(df['url'])):
+    for i in tqdm(range(len(df['url']))):
         try:
+            # print(f'Image {i}')
             target_file = os.path.join(dir, f'conceptualcc12m_{x}')
-            print(f'Saving to {target_file}')
+            # print(f'Saving to {target_file}')
             x += 1
             url = df['url'].iloc[i]
-            with requests.get(url, stream=True) as r:
+            with requests.get(url, stream=True, timeout=15) as r:
                 with open(f'{target_file}.jpg', "wb") as image:
                     r.raw.decode_content = True
                     shutil.copyfileobj(r.raw, image)
