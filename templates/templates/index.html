@@ -4,7 +4,8 @@
     <title>Index</title>
 </head>
 <body>
-    <img src="{{url_for('static', filename='output.png')}}">
+    <h3>Output: {{ user_image.split(".")[0] }}</h3>
+    <img src="{{url_for('static', filename=user_image )}}">
 </body>
 </html>
 
