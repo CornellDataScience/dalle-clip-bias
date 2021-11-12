@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 import subprocess
 
 app = Flask(__name__)
@@ -9,6 +9,7 @@ def get_test():
 
 @app.route('/clip')
 def get_clip():
-    outputImage = './output.png'
-    subprocess.run(['python3', 'generate.py', '-p', 'test', '-o', '../public/' + outputImage, '-i', '1'])
+    prompt = request.args.get('prompt', 'test', type = str)
+    outputImage = request.args.get('outputImage', './output.png', type = str)
+    subprocess.run(['python3', 'generate.py', '-p', prompt, '-o', '../public/' + outputImage, '-i', '1'])
     return {'output': outputImage}

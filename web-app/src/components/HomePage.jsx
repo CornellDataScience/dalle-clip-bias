@@ -9,9 +9,9 @@ function HomePage(props) {
         // fetch('/test').then(res => res.json()).then(data => {
         //     updateValue(data.output);
         // })
-        fetch('/clip').then(res => res.json()).then(data => {
-            console.log(data.output);
-        })
+        //fetch('/clip').then(res => res.json()).then(data => {
+        //    console.log(data.output);
+        //})
     }, [currentImage]);
 
     if (props.display === 0) {
