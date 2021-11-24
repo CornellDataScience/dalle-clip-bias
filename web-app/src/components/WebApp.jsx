@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import Navbar from './Navbar';
 import HomePage from './HomePage';
-import HomePage2 from './HomePage2';
 import '../App.css';
 
 export default class WebApp extends Component {
@@ -16,7 +15,7 @@ export default class WebApp extends Component {
         return (
             <div className="WebApp">
                 <Navbar toCallBack={(childState) => this.setState({page: childState.page})}/>
-                <HomePage2 display={this.state.page} />
+                <HomePage display={this.state.page} />
             </div>
         )
     }
