@@ -1,3 +1,10 @@
+# Web Application Setup
+
+1. Install [NodeJS](https://nodejs.org/en/download/)
+2. Install dependencies: npm install
+3. Run frontend: npm run start
+4. Run backend: npm run start-api
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
