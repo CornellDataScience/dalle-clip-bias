@@ -9,6 +9,7 @@ args = parser.parse_args()
 
 start = timer()
 
+# query: a photo of a female, a photo of male
 def get_google_images():
     params = {
       "api_key": "aca86d214a841b7daa52db6a635b0156c773dd2ffb9068373bf521a6d5a819c5",
@@ -23,8 +24,8 @@ def get_google_images():
     # print(json.dumps(results['suggested_searches'], indent=2, ensure_ascii=False))
     print(json.dumps(results['images_results'], indent=2, ensure_ascii=False))
 
-    if(not os.path.isdir(f'images/{args.query}')):
-        os.mkdir(f'images/{args.query}')
+    if(not os.path.isdir(f'test/{args.query}')):
+        os.makedirs(f'test/{args.query}')
 
     # -----------------------
     # Downloading images
@@ -37,7 +38,7 @@ def get_google_images():
         opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36 Edge/18.19582')]
         urllib.request.install_opener(opener)
 
-        urllib.request.urlretrieve(image['original'], f'images/{args.query}/{args.query}_{index}.jpg')
+        urllib.request.urlretrieve(image['original'], f'test/{args.query}/{args.query}_{index}.jpg')
 
     end = timer()
     print(end - start)

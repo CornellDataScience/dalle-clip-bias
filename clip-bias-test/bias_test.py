@@ -110,7 +110,7 @@ class MakeCutouts(nn.Module):
         # print(augment_list)
         
         self.augs = nn.Sequential(*augment_list)
-        self.noise_fac = 0.1
+        self.noise_fac =  0 #0.1
         # self.noise_fac = False
         
         # Pooling
@@ -233,8 +233,7 @@ def main():
     if not args.prompts:
         args.prompts = "A cute, smiling, Nerdy Rodent"
 
-    if not args.augments:
-        args.augments = [['Af', 'Pe', 'Ji', 'Er']]
+    args.augments = [[]]
 
     # Do it
     device = torch.device(args.cuda_device)
@@ -283,11 +282,19 @@ def main():
     # CLIP tokenize/encode   
     male_txt, male_weight, male_stop = split_prompt(male_prompt[0])
     male_prompt_embed = perceptor.encode_text(clip.tokenize(male_txt).to(device)).float()
+    male_prompt_embed = male_prompt_embed.cpu().numpy()
 
     female_txt, female_weight, female_stop = split_prompt(female_prompt[0])
     female_prompt_embed = perceptor.encode_text(clip.tokenize(female_txt).to(device)).float()
+    female_prompt_embed = female_prompt_embed.cpu().numpy()
+    prompt_embed = np.vstack((male_prompt_embed, female_prompt_embed))
+    prompt_embed /= np.linalg.norm(prompt_embed,axis=-1,keepdims=True)
+    #print(prompt_embed.shape)
 
     results = []
+    num_close = 0
+    fem_results = {'female': [], 'male': []}
+    male_results = {'female': [], 'male': []}
     # Image initialisation
     for img_file in tqdm(os.listdir(args.dir)):
         # print(f'File {args.dir}/{img_file}')
@@ -306,27 +313,118 @@ def main():
         batch = make_cutouts(TF.to_tensor(img).unsqueeze(0).to(device))
         img_embed = perceptor.encode_image(normalize(batch)).float()
 
-        male_cosine = 1 - spatial.distance.cosine(male_prompt_embed.cpu().numpy().flatten(), img_embed.cpu().numpy().flatten())
-        female_cosine = 1 - spatial.distance.cosine(female_prompt_embed.cpu().numpy().flatten(), img_embed.cpu().numpy().flatten())
+        img_embed = img_embed.cpu().numpy()
+        img_embed /= np.linalg.norm(img_embed, axis=-1, keepdims=True)
+        #print(img_embed.shape)
+
+        sims = (prompt_embed @ img_embed.T).T
+
+        if('female' in img_file):
+            # Female prompt & Female image
+            fem_results['female'].append(sims[0, 1])
+            # Male prompt & female image
+            fem_results['male'].append(sims[0, 0])
+        else:
+            male_results['female'].append(sims[0, 1])
+            male_results['male'].append(sims[0, 0])
+
+        #male_cosine = 1 - spatial.distance.cosine(male_prompt_embed.cpu().numpy().flatten(), img_embed.cpu().numpy().flatten())
+        #female_cosine = 1 - spatial.distance.cosine(female_prompt_embed.cpu().numpy().flatten(), img_embed.cpu().numpy().flatten())
 
         # 0 is female; 1 is male
-        if(male_cosine > female_cosine):
+        # print(sims.shape)
+        num_close += np.abs(sims[0,0] - sims[0, 1]) < 1e-5
+        if sims.flatten().argmax() == 0: #(male_cosine > female_cosine):
             results.append((f'{img_file}', 1))
         else:
             results.append((f'{img_file}', 0))
 
     num_correct = 0
+    fem = 0
+    male = 0
+    num_male = 0
+    num_fem = 0
+    tp_male = 0
+    fn_male = 0
+    fp_male = 0
+    tp_fem = 0
+    fn_fem = 0
+    fp_fem = 0
     for file, pred in results:
-        if('female' in img_file and pred == 0):
+        if('female' in file):
+            num_fem += 1
+        else:
+            num_male += 1
+
+        if ('female' in file and pred == 0):
             num_correct += 1
+            tp_fem += 1
+        elif ('female' in file and pred == 1):
+            fn_fem += 1
+            fp_male += 1
+        elif (pred == 1):
+            num_correct += 1
+            tp_male += 1
+        elif (pred == 0):
+            fn_male += 1
+            fp_fem += 1
+
+        if(pred == 0):
+            fem += 1
+        elif(pred == 1):
+            male += 1
+
+    print(num_close / len(results))
     
+    print(num_correct)
     print(num_correct / len(results))
+    print(fem)
+    print(male)
+    print('Precision for men: ', tp_male/male)
+    print('Precision for female: ', tp_fem/fem)
+    print('Recall for men: ', tp_male/(tp_male + fn_male))
+    print('Recall for female: ', tp_fem/(tp_fem + fn_fem))
 
-    # _, bin_edges = np.histogram(fem_results['female'] + fem_results['male'])  
-    # plt.hist(fem_results['female'], bins=bin_edges, label='Female', color='blue', alpha=0.4)
-    # plt.hist(fem_results['male'], bins=bin_edges, label='Male', color='red', alpha=0.4)
+    plt.title('Distribution of Similarity to Different Classes for Female Images')
+    _, bin_edges = np.histogram(fem_results['female'] + fem_results['male'])  
+    plt.hist(fem_results['female'], bins=bin_edges, label='Female', color='blue', alpha=0.4)
+    plt.hist(fem_results['male'], bins=bin_edges, label='Male', color='red', alpha=0.4)
+    plt.xlabel('Similarity Score')
+    plt.ylabel('Number of Images')
+    plt.legend()
 
-    # plt.savefig('test.png')
+    plt.savefig('female_hist.png')
+    plt.clf()
+
+    plt.title('Distribution of Similarity to Different Classes for Male Images')
+    _, bin_edges = np.histogram(male_results['female'] + male_results['male'])  
+    plt.hist(male_results['female'], bins=bin_edges, label='Female', color='blue', alpha=0.4)
+    plt.hist(male_results['male'], bins=bin_edges, label='Male', color='red', alpha=0.4)
+    plt.xlabel('Similarity Score')
+    plt.ylabel('Number of Images')
+    plt.legend()
+
+    plt.savefig('male_hist.png')
+    plt.clf()
+
+    plt.title('Distribution of Similarity to Different Classes for Male Images')
+    plt.scatter(male_results['male'], male_results['female'])
+    lims = [
+        np.min([plt.xlim()[0], plt.ylim()[0]]),  # min of both axes
+        np.max([plt.xlim()[1], plt.ylim()[1]]),  # max of both axes
+    ]
+    plt.plot(lims, lims, linestyle='dotted', color='k', alpha=0.5)
+    plt.xlabel('Male Similarity Scores')
+    plt.ylabel('Female Similarity Scores')
+    plt.savefig('male_scatter.png')
+    plt.clf()
+
+    plt.title('Distribution of Similarity to Different Classes for Female Images')
+    plt.scatter(fem_results['male'], fem_results['female'])
+    plt.plot(lims, lims, linestyle='dotted', color='k', alpha=0.5)
+    plt.xlabel('Male Similarity Scores')
+    plt.ylabel('Female Similarity Scores')
+    plt.savefig('female_scatter.png')
 
 
 if __name__ == '__main__':
